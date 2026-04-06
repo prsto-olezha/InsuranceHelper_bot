@@ -2,37 +2,12 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from core.keyboards.reply_keyboards import get_back_keyboard, get_main_menu_keyboard
-from core.keyboards.inline_keyboards import get_scenario_buttons, get_scenario_choice_buttons
+from core.keyboards.inline_keyboards import get_scenario_choice_buttons
 from core.replics import get_scenario
 from core.db import add_points, complete_scenario
 import core.FSM as FSM
 
 router = Router()
-
-
-@router.message(F.text == "🎮 Сценарии")
-async def show_scenarios(message: Message, state: FSMContext):
-    """Показать меню сценариев"""
-    await state.set_state(FSM.ScenarioStates.CHOOSING_SCENARIO)
-    
-    scenarios_text = """
-🎮 <b>Реальные жизненные ситуации</b>
-
-Выбери сценарий и узнай, как страхование помогает в жизни!
-
-<b>Доступные сценарии:</b>
-📱 <b>Разбил телефон</b> — что делать?
-✈️ <b>Заболел за границей</b> — как не разориться?
-🚲 <b>Украли велосипед</b> — вернут ли деньги?
-🏥 <b>Травма на тренировке</b> — кто заплатит за лечение?
-
-👇 <b>Нажми на кнопку ниже, чтобы начать сценарий!</b>
-"""
-    await message.answer(
-        scenarios_text,
-        parse_mode="HTML",
-        reply_markup=get_scenario_buttons()
-    )
 
 
 @router.callback_query(lambda c: c.data.startswith("scenario_"))
@@ -122,13 +97,3 @@ async def handle_choice(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-@router.callback_query(lambda c: c.data == "back_to_menu")
-async def back_to_menu(callback: CallbackQuery, state: FSMContext):
-    """Вернуться в главное меню"""
-    await state.set_state(FSM.UserStates.default)
-    await callback.message.edit_text(
-        "🏠 <b>Главное меню</b>",
-        parse_mode="HTML",
-        reply_markup=get_main_menu_keyboard()
-    )
-    await callback.answer()

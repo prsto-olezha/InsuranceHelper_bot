@@ -5,6 +5,7 @@ from core.keyboards.reply_keyboards import get_lessons_menu_keyboard, get_back_k
 from core.keyboards.inline_keyboards import get_lesson_buttons
 from core.replics import get_lesson
 from core.db import get_user_stats, complete_lesson, add_points
+from core.replics import LESSONS, SCENARIOS
 
 router = Router()
 
@@ -24,19 +25,9 @@ async def show_lessons(message: Message):
 async def show_lesson(message: Message):
     """Показать конкретный урок"""
     text = message.text
-    if "Урок 1" in text:
-        lesson_id = 1
-    elif "Урок 2" in text:
-        lesson_id = 2
-    elif "Урок 3" in text:
-        lesson_id = 3
-    elif "Урок 4" in text:
-        lesson_id = 4
-    else:
-        await message.answer("Урок не найден!")
-        return
-    
+    lesson_id = int(text.split()[2][:-1])
     lesson = get_lesson(lesson_id)
+
     if lesson:
         await message.answer(
             f"📚 <b>{lesson['title']}</b>\n\n{lesson['content']}",
@@ -50,29 +41,13 @@ async def show_lesson(message: Message):
         await message.answer("Урок временно недоступен!")
 
 
-@router.callback_query(lambda c: c.data.startswith("repeat_lesson_"))
-async def repeat_lesson(callback: CallbackQuery):
-    """Повторить урок"""
-    lesson_id = int(callback.data.split("_")[2])
-    lesson = get_lesson(lesson_id)
-    
-    if lesson:
-        await callback.message.edit_text(
-            f"📚 <b>{lesson['title']}</b>\n\n{lesson['content']}",
-            parse_mode="HTML"
-        )
-        await callback.answer("Повторяй и запоминай! 📖")
-    else:
-        await callback.answer("Урок не найден!")
-
-
 @router.callback_query(lambda c: c.data.startswith("next_lesson_"))
 async def next_lesson(callback: CallbackQuery):
     """Следующий урок"""
     current_id = int(callback.data.split("_")[2])
     next_id = current_id + 1
     
-    if next_id <= 4:
+    if next_id <= len(LESSONS):
         lesson = get_lesson(next_id)
         if lesson:
             await callback.message.edit_text(
@@ -86,16 +61,3 @@ async def next_lesson(callback: CallbackQuery):
             await callback.answer("Следующий урок скоро появится!")
     else:
         await callback.answer("🎉 Поздравляю! Ты прошел все уроки!", show_alert=True)
-
-
-@router.callback_query(lambda c: c.data == "show_scenarios")
-async def show_scenarios_from_lesson(callback: CallbackQuery):
-    """Показать сценарии из урока"""
-    from core.keyboards.inline_keyboards import get_scenario_buttons
-    
-    await callback.message.edit_text(
-        "🎮 <b>Выбери жизненную ситуацию:</b>",
-        parse_mode="HTML",
-        reply_markup=get_scenario_buttons()
-    )
-    await callback.answer()

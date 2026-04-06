@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import asyncio
 from core.logger import logger
 from create_bot import bot, dp
@@ -35,7 +37,7 @@ async def main():
     
     await init_mongo_db()
     await bot.delete_webhook(drop_pending_updates=True)
-    logger.info("Bot activated!")
+    logger.info("Bot successfully activated!")
     await dp.start_polling(bot)
 
 

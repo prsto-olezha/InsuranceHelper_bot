@@ -62,21 +62,6 @@ def get_lessons_menu_keyboard():
     )
 
 
-def get_scenarios_menu_keyboard():
-    """Кнопки выбора сценария"""
-    builder = InlineKeyboardBuilder()
-    
-    builder.button(text="📱 Разбил телефон", callback_data="scenario_phone")
-    builder.button(text="✈️ Заболел за границей", callback_data="scenario_travel")
-    builder.button(text="🚲 Украли велосипед", callback_data="scenario_bike")
-    builder.button(text="🏥 Травма на тренировке", callback_data="scenario_health")
-    builder.button(text="🔙 Назад в меню", callback_data="back_to_menu")
-    
-    builder.adjust(1)  # По одной кнопке в ряд
-    
-    return builder.as_markup()
-
-
 def get_quiz_menu_keyboard():
     """Меню для тестов"""
     builder = ReplyKeyboardBuilder()
@@ -111,21 +96,21 @@ def get_profile_keyboard():
     )
 
 
-def get_help_keyboard():
-    """Клавиатура помощи"""
-    builder = ReplyKeyboardBuilder()
+# def get_help_keyboard():
+#     """Клавиатура помощи"""
+#     builder = ReplyKeyboardBuilder()
     
-    builder.button(text="❓ Как пользоваться ботом")
-    builder.button(text="📚 Что такое страхование")
-    builder.button(text="💬 Задать вопрос")
-    builder.button(text="🔙 Назад в меню")
+#     builder.button(text="❓ Как пользоваться ботом")
+#     builder.button(text="📚 Что такое страхование")
+#     builder.button(text="💬 Задать вопрос")
+#     builder.button(text="🔙 Назад в меню")
     
-    builder.adjust(2)
+#     builder.adjust(2)
     
-    return builder.as_markup(
-        resize_keyboard=True,
-        input_field_placeholder="Нужна помощь? ❓"
-    )
+#     return builder.as_markup(
+#         resize_keyboard=True,
+#         input_field_placeholder="Нужна помощь? ❓"
+#     )
 
 
 def get_back_keyboard():

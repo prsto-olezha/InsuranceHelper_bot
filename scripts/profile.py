@@ -7,31 +7,23 @@ from core.keyboards.reply_keyboards import (
     get_profile_keyboard
 )
 from core.db import get_user_stats, get_top_users, get_user_progress_by_lessons
-from core.replics import LESSONS
+from core.replics import LESSONS, SCENARIOS
 import core.FSM as FSM
+
 
 router = Router()
 
 
 @router.message(F.text == "🏆 Мой прогресс")
 async def show_profile_menu(message: Message, state: FSMContext):
-    """Показать главное меню профиля"""
-    await state.set_state(FSM.UserStates.default)
-    
+    """Показать меню профиля"""
     stats = await get_user_stats(message.from_user.id)
     
-    if not stats or stats['points'] == 0:
+    if not stats:
         await message.answer(
             "👤 <b>Твой профиль</b>\n\n"
-            "📊 Статистика пока пуста.\n\n"
-            "🎯 <b>Как заработать первые очки?</b>\n"
-            "• Пройди уроки в разделе 📚 Уроки\n"
-            "• Попробуй сценарии в разделе 🎮 Сценарии\n"
-            "• Проверь знания в разделе 📝 Тест\n\n"
-            "💡 За каждый пройденный урок ты получишь +10 очков!\n"
-            "💡 За правильное решение в сценарии до +20 очков!\n"
-            "💡 За хороший результат теста до +30 очков!\n\n"
-            "👇 <b>Начни обучение прямо сейчас!</b>",
+            "Статистика пока пуста. Начни обучение, чтобы заработать очки!\n\n"
+            "📚 Начни с первого урока или попробуй сценарий!",
             parse_mode="HTML",
             reply_markup=get_profile_keyboard()
         )
@@ -45,55 +37,46 @@ async def show_profile_menu(message: Message, state: FSMContext):
         "Эксперт": "🏆"
     }.get(stats['level'], "📖")
     
-    # Прогресс-бар
-    if stats['level'] == "Новичок":
-        progress = min(int(stats['points'] / 50 * 100), 100)
-        next_level = "Ученик"
-        needed = 50 - stats['points']
-    elif stats['level'] == "Ученик":
-        progress = min(int((stats['points'] - 50) / 150 * 100), 100)
-        next_level = "Продвинутый"
-        needed = 200 - stats['points']
-    elif stats['level'] == "Продвинутый":
-        progress = min(int((stats['points'] - 200) / 300 * 100), 100)
-        next_level = "Эксперт"
-        needed = 500 - stats['points']
-    else:
-        progress = 100
-        next_level = "Максимум"
-        needed = 0
-    
-    progress_bar = "█" * (progress // 10) + "░" * (10 - (progress // 10))
-    
     text = (
         f"👤 <b>Твой профиль</b>\n\n"
         f"{level_emoji} <b>Уровень:</b> {stats['level']}\n"
         f"⭐ <b>Очки:</b> {stats['points']}\n"
-        f"📊 <b>Прогресс:</b> [{progress_bar}] {progress}%\n"
-    )
-    
-    if needed > 0:
-        text += f"📈 <b>До уровня {next_level}:</b> {needed} очков\n\n"
-    else:
-        text += f"\n🏆 <b>Ты достиг максимального уровня!</b>\n\n"
-    
-    text += (
-        f"📖 <b>Пройдено уроков:</b> {stats['lessons_completed']}/4\n"
-        f"🎮 <b>Пройдено сценариев:</b> {stats['scenarios_completed']}/4\n"
+        f"📖 <b>Пройдено уроков:</b> {stats['lessons_completed']}/{len(LESSONS)}\n"
+        f"🎮 <b>Пройдено сценариев:</b> {stats['scenarios_completed']}/{len(SCENARIOS)}\n"
     )
     
     if stats.get('quiz_average', 0) > 0:
         text += f"📊 <b>Средний результат тестов:</b> {stats['quiz_average']:.0f}%\n"
     
+    # Прогресс до следующего уровня
+    points = stats['points']
+    if stats['level'] == "Новичок":
+        next_level = "Ученик"
+        needed = 50 - points
+        if needed > 0:
+            text += f"\n📈 <b>До уровня {next_level}:</b> {needed} очков"
+    elif stats['level'] == "Ученик":
+        next_level = "Продвинутый"
+        needed = 200 - points
+        if needed > 0:
+            text += f"\n📈 <b>До уровня {next_level}:</b> {needed} очков"
+    elif stats['level'] == "Продвинутый":
+        next_level = "Эксперт"
+        needed = 500 - points
+        if needed > 0:
+            text += f"\n📈 <b>До уровня {next_level}:</b> {needed} очков"
+    elif stats['level'] == "Эксперт":
+        text += f"\n🏆 <b>Ты достиг максимального уровня!</b>"
+    
     # Мотивационная фраза
-    if stats['lessons_completed'] == 0:
-        text += "\n💡 <b>Совет:</b> Начни с первого урока в разделе 📚 Уроки!"
+    if stats['lessons_completed'] == 0 and stats['scenarios_completed'] == 0:
+        text += "\n\n💡 <b>Совет:</b> Начни с первого урока, чтобы заработать первые очки!"
     elif stats['lessons_completed'] < 4:
-        text += "\n💡 <b>Совет:</b> Продолжай проходить уроки, чтобы повысить уровень!"
+        text += "\n\n💡 <b>Совет:</b> Пройди все 4 урока, чтобы стать экспертом!"
     elif stats['scenarios_completed'] < 4:
-        text += "\n💡 <b>Совет:</b> Попробуй все сценарии в разделе 🎮 Сценарии!"
+        text += "\n\n💡 <b>Совет:</b> Попробуй все жизненные сценарии!"
     else:
-        text += "\n🎉 <b>Ты молодец!</b> Поделись ботом с друзьями!"
+        text += "\n\n🎉 <b>Ты молодец!</b> Продолжай в том же духе!"
     
     await message.answer(text, parse_mode="HTML", reply_markup=get_profile_keyboard())
 
@@ -149,10 +132,10 @@ async def show_detailed_stats(message: Message, state: FSMContext):
         status = "✅" if is_completed else "⭕"
         text += f"{status} {title}\n"
     
-    text += f"\n📊 <b>Прогресс:</b> {stats['lessons_completed']}/4 уроков\n"
+    text += f"\n📊 <b>Прогресс:</b> {stats['lessons_completed']}/{len(LESSONS)} уроков\n"
     
     # Процент выполнения
-    percent = int(stats['lessons_completed'] / 4 * 100)
+    percent = int(stats['lessons_completed'] / len(LESSONS) * 100)
     bar = "█" * (percent // 10) + "░" * (10 - (percent // 10))
     text += f"[{bar}] {percent}%\n\n"
     
@@ -173,10 +156,10 @@ async def show_detailed_stats(message: Message, state: FSMContext):
         status = "✅" if name in completed_scenarios else "⭕"
         text += f"{status} {scenarios_dict[name]}\n"
 
-    text += f"\n📊 <b>Прогресс:</b> {stats['scenarios_completed']}/4 сценариев\n"
+    text += f"\n📊 <b>Прогресс:</b> {stats['scenarios_completed']}/{len(SCENARIOS)} сценариев\n"
     
     # Процент выполнения
-    percent = int(stats['scenarios_completed'] / 4 * 100)
+    percent = int(stats['scenarios_completed'] / len(SCENARIOS) * 100)
     bar = "█" * (percent // 10) + "░" * (10 - (percent // 10))
     text += f"[{bar}] {percent}%\n\n"
     
@@ -185,10 +168,10 @@ async def show_detailed_stats(message: Message, state: FSMContext):
     text += f"💡 <b>Рекомендации</b>\n"
     text += f"━━━━━━━━━━━━━━━━━━━━\n"
     
-    if stats['lessons_completed'] < 4:
+    if stats['lessons_completed'] < len(LESSONS):
         next_lesson = stats['lessons_completed'] + 1
         text += f"📚 Пройди урок {next_lesson}, чтобы получить +10 очков!\n"
-    elif stats['scenarios_completed'] < 4:
+    elif stats['scenarios_completed'] < len(SCENARIOS):
         text += f"🎮 Попробуй новые сценарии, чтобы заработать до +20 очков!\n"
     else:
         text += f"🎉 Ты прошел весь курс! Поделись ботом с друзьями!\n"

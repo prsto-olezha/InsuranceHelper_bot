@@ -3,7 +3,6 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from core.keyboards.reply_keyboards import get_main_menu_keyboard, get_age_keyboard
-from core.keyboards.inline_keyboards import get_scenario_buttons
 import core.FSM as FSM
 from core.models import UserModel
 import core.db as db

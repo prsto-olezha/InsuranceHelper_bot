@@ -15,24 +15,6 @@ def get_lesson_buttons(lesson_id: int, is_completed: bool = False):
     return builder.as_markup()
 
 
-def get_scenario_buttons():
-    """Кнопки выбора сценария"""
-    builder = InlineKeyboardBuilder()
-    
-    builder.button(text="📱 Разбил телефон", callback_data="scenario_phone")
-    builder.button(text="✈️ Заболел за границей", callback_data="scenario_travel")
-    builder.button(text="🚲 Украли велосипед", callback_data="scenario_bike")
-    builder.button(text="🏥 Травма на тренировке", callback_data="scenario_health")
-    builder.button(text="🔥 Пожар в квартире", callback_data="scenario_fire")
-    builder.button(text="🐕 Укусила собака", callback_data="scenario_dog")
-    builder.button(text="📚 Вернуться к урокам", callback_data="back_to_lessons")
-    builder.button(text="🏠 Главное меню", callback_data="back_to_menu")
-    
-    builder.adjust(2)
-    
-    return builder.as_markup()
-
-
 def get_scenario_choice_buttons(scenario_id: str, option_index: int):
     """Кнопки выбора ответа в сценарии"""
     builder = InlineKeyboardBuilder()
@@ -102,60 +84,16 @@ def get_confirmation_buttons(action: str, item_id: str):
     return builder.as_markup()
 
 
-def get_rating_buttons():
-    """Кнопки для рейтинга"""
+def get_scenarios_menu_keyboard():
+    """Кнопки выбора сценария"""
     builder = InlineKeyboardBuilder()
     
-    builder.button(text="🏆 Общий рейтинг", callback_data="rating_all")
-    builder.button(text="📅 За неделю", callback_data="rating_week")
-    builder.button(text="👥 По возрасту", callback_data="rating_age")
-    builder.button(text="🔙 Назад", callback_data="back_to_profile")
+    builder.button(text="📱 Разбил телефон", callback_data="scenario_phone")
+    builder.button(text="✈️ Заболел за границей", callback_data="scenario_travel")
+    builder.button(text="🚲 Украли велосипед", callback_data="scenario_bike")
+    builder.button(text="🏥 Травма на тренировке", callback_data="scenario_health")
+    builder.button(text="🔙 Назад в меню", callback_data="back_to_menu")
     
-    builder.adjust(2)
-    
-    return builder.as_markup()
-
-
-def get_feedback_buttons(user_id: int):
-    """Кнопки для оценки урока/сценария"""
-    builder = InlineKeyboardBuilder()
-    
-    builder.button(text="😊 Отлично", callback_data=f"feedback_great_{user_id}")
-    builder.button(text="😐 Нормально", callback_data=f"feedback_normal_{user_id}")
-    builder.button(text="😞 Непонятно", callback_data=f"feedback_bad_{user_id}")
-    builder.button(text="💡 Хочу доработок", callback_data=f"feedback_improve_{user_id}")
-    
-    builder.adjust(2)
-    
-    return builder.as_markup()
-
-
-def get_share_buttons(lesson_id: int, scenario_id: str = None):
-    """Кнопки для шаринга"""
-    builder = InlineKeyboardBuilder()
-    
-    builder.button(text="📤 Поделиться уроком", switch_inline_query=f"урок {lesson_id}")
-    builder.button(text="👥 Пригласить друга", callback_data="invite_friend")
-    builder.button(text="⭐ В избранное", callback_data=f"favorite_{lesson_id}")
-    
-    if scenario_id:
-        builder.button(text="🎮 Поделиться сценарием", switch_inline_query=f"сценарий {scenario_id}")
-    
-    builder.adjust(1)
-    
-    return builder.as_markup()
-
-
-def get_settings_buttons():
-    """Кнопки настроек"""
-    builder = InlineKeyboardBuilder()
-    
-    builder.button(text="🔔 Вкл/Выкл уведомления", callback_data="toggle_notifications")
-    builder.button(text="🌙 Тема (светлая/темная)", callback_data="toggle_theme")
-    builder.button(text="📊 Сбросить прогресс", callback_data="reset_progress")
-    builder.button(text="🌐 Язык", callback_data="change_language")
-    builder.button(text="🔙 Назад", callback_data="back_to_profile")
-    
-    builder.adjust(1)
+    builder.adjust(1)  # По одной кнопке в ряд
     
     return builder.as_markup()
